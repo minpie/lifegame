@@ -4,11 +4,11 @@ import sys
 
 
 # define data:
-SIZE_AREA_WIDTH = 80 # 영역 너비(셀)
-SIZE_AREA_HEIGHT = 40 # 영역 높이(셀)
+SIZE_AREA_WIDTH = 5 # 영역 너비(셀)
+SIZE_AREA_HEIGHT = 5 # 영역 높이(셀)
 
-SIZE_PER_CELL_WIDTH = 20 # 한 셀당 너비
-SIZE_PER_CELL_HEIGHT = 20 # 한 셀당 높이
+SIZE_PER_CELL_WIDTH = 150 # 한 셀당 너비
+SIZE_PER_CELL_HEIGHT = 150 # 한 셀당 높이
 
 SIZE_SCREEN_WIDTH = SIZE_AREA_WIDTH * SIZE_PER_CELL_WIDTH # 총 화면크기(셀 가로 개수 * 셀당 너비)
 SIZE_SCREEN_HEIGHT = SIZE_AREA_HEIGHT * SIZE_PER_CELL_HEIGHT # 총 화면크기(셀 세로 개수 * 셀당 높이)
@@ -37,7 +37,32 @@ def endProgram():
     # 프로그램 종료용
     sys.exit()
 
-
+def calcOneCell(index):
+    # True: 다음 세대에 생존
+    # False: 다음 세대에 죽어있음
+    nears = list()
+    nears_tmp = [
+    index+1,
+    index-1,
+    index+SIZE_AREA_WIDTH,
+    index+SIZE_AREA_WIDTH+1,
+    index+SIZE_AREA_WIDTH-1,
+    index-SIZE_AREA_WIDTH,
+    index-SIZE_AREA_WIDTH-1,
+    index-SIZE_AREA_WIDTH+1]
+    for i in nears_tmp:
+        if (i >= 0) and (i < (SIZE_AREA_HEIGHT * SIZE_AREA_WIDTH)):
+            nears.append(i)
+    check = 0
+    for i in nears:
+        check += int(cells[i])
+    if cells[index] == "0":
+        if check == 3:
+            return True
+    else:
+        if (check == 2) or (check == 3):
+            return True
+    return False
 
 
 def editInitialCell(mouse_x, mouse_y):
@@ -98,21 +123,41 @@ turtle.listen()
 
 
 # main loop:
-try:
-    while True:
-        if IS_EDIT_LOCKED:
-            # loop:
 
 
 
-
-
-
-            pass
-        # end loop
-        turtle.done()
-except:
-    pass
+def looping():
+    global cells
+    if IS_EDIT_LOCKED:
+    #if True:
+        # loop:
+        #print(cells)
+        next_cells = cells # 다음 세대
+        for i in range(0, SIZE_AREA_HEIGHT * SIZE_AREA_HEIGHT):
+            turt.penup()
+            if calcOneCell(i):
+                next_cells[i] = "1"
+                current_color = CELL_COLORS[1]
+            else:
+                next_cells[i] = "0"
+                current_color = CELL_COLORS[0]
+            pos_x = i % SIZE_AREA_WIDTH
+            pos_y = int(i / SIZE_AREA_WIDTH)
+            
+            # 그리기:
+            turt.fillcolor(current_color)
+            turt.begin_fill()
+            turt.goto(
+                    (pos_x * SIZE_PER_CELL_WIDTH) - (SIZE_SCREEN_WIDTH / 2),   
+                    (pos_y * SIZE_PER_CELL_HEIGHT) - (SIZE_SCREEN_HEIGHT / 2)
+                    )
+            turt.pendown()
+            drawOneCell()
+            turt.end_fill()
+        cells = next_cells
+    turtle.ontimer(looping, 20)
+looping()
+turtle.mainloop()
 print("End!")
 # end main loop
 
